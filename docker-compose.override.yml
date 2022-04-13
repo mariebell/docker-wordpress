@@ -1,0 +1,55 @@
+version: '3.9'
+services:
+  proxy:
+    image: wp-proxy
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    container_name: wp-proxy
+    ports:
+      - 8888:8080
+    environment:
+      - UPSTREAM_HOST=app
+      - HTTP_X_FORWARDED_PROTO=https
+    networks:
+      - wp-network
+    volumes:
+      - ./app:/usr/share/nginx/html
+      - ./docker/nginx/default.conf.template:/etc/nginx/conf.d/default.conf.template
+  app:
+    image: app
+    container_name: wp-app
+    environment:
+      - USE_SSL=on
+      - DB_NAME=wordpress
+      - DB_USER=wordpress
+      - DB_PASSWORD=wordpress
+      - DB_HOST=db
+    volumes:
+      - ./app:/var/www/html
+  db:
+    image: mysql:5.7
+    container_name: wp-db
+    networks:
+      - wp-network
+    volumes:
+      - ./docker/mysql/db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: wp-phpmyadmin
+    ports:
+      - "8333:80"
+    networks:
+      - wp-network
+    environment:
+      - PMA_HOST=db
+      - MYSQL_ROOT_PASSWORD=wordpress
+
+networks:
+  wp-network:
+    driver: bridge
