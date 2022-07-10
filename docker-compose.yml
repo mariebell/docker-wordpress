@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  wp:
+    container_name: wordpress-app
+    image: 'wordpress:6.0-php8.0-apache'
+    ports:
+      - "8888:80"
+    volumes:
+      - ./wp:/var/www/html
+  db:
+    container_name: wordpress-db
+    image: 'mysql:8.0'
+    volumes:
+      - wp-db-volume:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: wp
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+
+volumes:
+  wp-db-volume:
